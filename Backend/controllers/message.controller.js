@@ -66,8 +66,8 @@ async function sendMessage(socket, io, data) {
     ]);
 
     console.log('Message sent:', newMessage);
-    
-    socket.join(senderId); 
+
+    socket.join(senderId);
     socket.join(recipientId);
     // Emit message to both sender and recipient
     io.to(recipientId).emit('newMessage', newMessage);
@@ -103,7 +103,7 @@ async function getMessages(socket, data) {
       conversationId: conversation._id,
     }).sort({ createdAt: 1 });
 
-    
+
     console.log('Messages fetched:', messages);
 
     // Emit messages to the socket

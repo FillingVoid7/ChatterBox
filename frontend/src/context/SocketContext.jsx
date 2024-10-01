@@ -94,24 +94,24 @@ export const SocketProvider = ({ children }) => {
     }
   }, [state.socket]);
 
-const fetchMessages = useCallback((data) => {
-  return new Promise((resolve, reject) => {
-    if (state.socket) {
-      state.socket.emit('getMessages', data);
+  const fetchMessages = useCallback((data) => {
+    return new Promise((resolve, reject) => {
+      if (state.socket) {
+        state.socket.emit('getMessages', data);
 
-      // Handle the response from the server
-      state.socket.once('messages', (messages) => {
-        if (messages) {
-          resolve(messages);
-        } else {
-          reject(new Error('No messages received'));
-        }
-      });
-    } else {
-      reject(new Error('Socket is not connected'));
-    }
-  });
-}, [state.socket]);
+        // Handle the response from the server
+        state.socket.once('messages', (messages) => {
+          if (messages) {
+            resolve(messages);
+          } else {
+            reject(new Error('No messages received'));
+          }
+        });
+      } else {
+        reject(new Error('Socket is not connected'));
+      }
+    });
+  }, [state.socket]);
 
 
   // Handle messages event

@@ -30,9 +30,9 @@ export const useMessageStore = create((set) => ({
 
   getMessages: (otherUserId) => {
     const { socket, listenForMessages } = useSocket(); // Get socket and message listener functions from SocketContext
-  
+
     set({ loading: true, error: null });
-  
+
     // Listen for incoming messages via WebSocket
     listenForMessages((newMessage) => {
       set((state) => {
@@ -45,18 +45,18 @@ export const useMessageStore = create((set) => ({
         };
       });
     });
-  
+
     // Fetch initial messages when the socket emits 'messages'
     socket.emit('getMessages', { otherUserId });
-  
+
     // Listen for the fetched initial messages and update the store
     socket.on('messages', (initialMessages) => {
       console.log('Setting messages:', initialMessages); // Debug log
       setMessages(initialMessages); // Call setMessages with the fetched messages
     });
   },
-  
-  
+
+
 
   getConversations: () => {
     const { fetchConversations } = useSocket(); // Get fetchConversations function from SocketContext

@@ -60,7 +60,7 @@ export const useProfileCodeStore = create((set) => ({
             console.log('Attempting to add profile with ID:', profile._id);
             const response = await axios.post(`${API_URL}/addProfileToChat`, { profileId: profile._id });
             console.log('Profile added to chat list:', response.data);
-    
+
             set((state) => {
                 const updatedProfiles = [...state.addedProfiles, response.data.profile];
                 localStorage.setItem('addedProfiles', JSON.stringify(updatedProfiles)); // Optional persistence
@@ -69,7 +69,7 @@ export const useProfileCodeStore = create((set) => ({
                     loading: false,
                 };
             });
-    
+
         } catch (error) {
             console.error('Error adding profile to chat list:', error);
             set({
@@ -79,7 +79,7 @@ export const useProfileCodeStore = create((set) => ({
         }
     },
 
-    
+
     fetchAddedProfilesFromList: async () => {
         set({ loading: true, error: null });
         try {
@@ -109,8 +109,8 @@ export const useProfileCodeStore = create((set) => ({
             });
         } catch (error) {
             console.error('Error fetching conversations:', error);
-            set({ 
-                conversations: [], 
+            set({
+                conversations: [],
                 loadingConversations: false,
                 errorConversations: error.response?.data?.message || 'Failed to fetch conversations',
             });
@@ -122,16 +122,16 @@ export const useProfileCodeStore = create((set) => ({
         try {
             const response = await axios.post(`${API_URL}/removeProfile`, { profileId });
             console.log('Profile removed from chat list:', response.data.message);
-    
+
             set((state) => {
                 const updatedProfiles = state.addedProfiles.filter(profile => profile._id !== profileId);
-                localStorage.setItem('addedProfiles', JSON.stringify(updatedProfiles)); 
+                localStorage.setItem('addedProfiles', JSON.stringify(updatedProfiles));
                 return {
                     addedProfiles: updatedProfiles,
                     loading: false,
                 };
             });
-    
+
         } catch (error) {
             console.error('Error removing profile from chat list:', error);
             set({

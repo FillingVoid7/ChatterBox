@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useAuthStore } from '/src/Store/AuthStore.js'; 
+import { useAuthStore } from '/src/Store/AuthStore.js';
 
 function ResetPassword() {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false); 
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  const { token } = useParams(); 
-  const { resetPassword } = useAuthStore(); 
+  const { token } = useParams();
+  const { resetPassword } = useAuthStore();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -23,7 +23,7 @@ function ResetPassword() {
     setIsLoading(true);
 
     try {
-      await resetPassword(token, newPassword); 
+      await resetPassword(token, newPassword);
       console.log('Password reset successful');
       navigate('/dashboard');
     } catch (err) {

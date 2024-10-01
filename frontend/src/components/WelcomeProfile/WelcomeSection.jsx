@@ -6,7 +6,7 @@ const WelcomeSection = ({ user }) => {
   const { generateJoinCode, joinCode } = useProfileCodeStore();
 
   if (!user) {
-    return <div>Loading...</div>; 
+    return <div>Loading...</div>;
   }
 
   const handleShareProfile = async () => {

@@ -24,7 +24,7 @@ function EmailVerification() {
             await verifyEmail(code);
             navigate('/dashboard');
         } catch (err) {
-            console.error('Verification error:',err)
+            console.error('Verification error:', err)
             setError(err.message || 'Error verifying email.');
         }
     };
@@ -63,7 +63,7 @@ function EmailVerification() {
                         <button
                             type="submit"
                             className="py-2 px-4 bg-blue-600 text-white font-bold rounded-full hover:bg-blue-700"
-                            disabled={isLoading} 
+                            disabled={isLoading}
                         >
                             Next
                         </button>

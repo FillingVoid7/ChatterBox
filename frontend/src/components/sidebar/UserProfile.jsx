@@ -49,7 +49,7 @@ function UserProfile({ firstName, lastName, showControls = true }) { // Added `s
             {showControls && ( // Conditionally render the controls
                 <div className="flex items-center space-x-3">
                     <div className="relative">
-                        <BellIcon 
+                        <BellIcon
                             className="h-5 w-5 text-blue-200 cursor-pointer"
                             onClick={toggleNotifications}
                         />

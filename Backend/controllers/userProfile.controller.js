@@ -17,8 +17,8 @@ export const fetchUserProfile = async (req, res) => {
 
         const cleanedJoinCode = joinCode.trim();
         const user = await User.findOne({ joinCode: cleanedJoinCode }).select('firstName lastName');
-        
-        console.log('User found:',user)
+
+        console.log('User found:', user)
 
         if (!user) {
             return res.status(404).json({
@@ -95,7 +95,7 @@ export const addProfileToChat = async (req, res) => {
                 success: false,
                 message: 'This profile is already in your chat list'
             });
-        } 
+        }
 
         conversation = new Conversation({
             participants: [loggedInUserId, profileId]

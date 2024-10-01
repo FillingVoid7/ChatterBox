@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { useAuthStore } from '/src/Store/AuthStore.js'; 
+import { useAuthStore } from '/src/Store/AuthStore.js';
 
 function ForgotPasswordModal() {
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
-  const { forgotPassword } = useAuthStore(); 
+  const { forgotPassword } = useAuthStore();
 
   const handleSendResetLink = async (e) => {
     e.preventDefault();

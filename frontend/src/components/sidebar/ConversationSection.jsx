@@ -30,7 +30,7 @@ function ConversationSection({ user, onChatSelect }) {
     } = useProfileCodeStore();
 
     const overlayRef = useRef(null);
-    const {joinRoom , listenForMessages} = useSocket();
+    const { joinRoom, listenForMessages } = useSocket();
 
     const toggleNewChatMenu = () => setIsNewChatOpen(!isNewChatOpen);
     const toggleRecentChatsMenu = () => setIsRecentChatsOpen(!isRecentChatsOpen);
@@ -148,9 +148,9 @@ function ConversationSection({ user, onChatSelect }) {
             // Cleanup any listeners if needed
         };
     }, [listenForMessages]);
-    
+
     const handleProfileClick = (profile) => {
-        if (profile && profile._id){
+        if (profile && profile._id) {
             joinRoom(profile._id)
             onChatSelect(profile)
         }
@@ -234,26 +234,26 @@ function ConversationSection({ user, onChatSelect }) {
                         {addedProfiles.length > 0 ? (
                             <div className="bg-gray-900 p-4 rounded-md">
                                 {addedProfiles
-                                .filter(profile => profile != null) 
-                                .map(profile => (
-                                    <div key={profile._id}
-                                         className="flex items-center justify-between p-2 bg-gray-800 rounded-md mb-2"
-                                         onClick={() => handleProfileClick(profile)}
-                                    >
-                                        <UserProfile
-                                            firstName={profile.firstName}
-                                            lastName={profile.lastName}
-                                            picture={profile.picture}
-                                            showControls={false}
-                                        />
-                                        <button
-                                            className="ml-auto px-2 py-1 text-xs rounded-md hover:bg-red-500"
-                                            onClick={(e) => handleRemoveProfile(profile._id, e)}
+                                    .filter(profile => profile != null)
+                                    .map(profile => (
+                                        <div key={profile._id}
+                                            className="flex items-center justify-between p-2 bg-gray-800 rounded-md mb-2"
+                                            onClick={() => handleProfileClick(profile)}
                                         >
-                                            <FaTrashAlt className="h-4 w-4 text-gray-400 hover:text-red-300" />
-                                        </button>
-                                    </div>
-                                ))}
+                                            <UserProfile
+                                                firstName={profile.firstName}
+                                                lastName={profile.lastName}
+                                                picture={profile.picture}
+                                                showControls={false}
+                                            />
+                                            <button
+                                                className="ml-auto px-2 py-1 text-xs rounded-md hover:bg-red-500"
+                                                onClick={(e) => handleRemoveProfile(profile._id, e)}
+                                            >
+                                                <FaTrashAlt className="h-4 w-4 text-gray-400 hover:text-red-300" />
+                                            </button>
+                                        </div>
+                                    ))}
                             </div>
                         ) : (
                             <div>No profiles added to the chat list yet.</div>
