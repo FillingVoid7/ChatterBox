@@ -5,6 +5,7 @@ import { FaInfoCircle, FaTrashAlt } from 'react-icons/fa';
 import { useProfileCodeStore } from '@/Store/CodeStore.js';
 import { useSocket } from '@/context/SocketContext.jsx';
 
+
 function ConversationSection({ user, onChatSelect }) {
     if (!user) {
         return <div>Loading...</div>;

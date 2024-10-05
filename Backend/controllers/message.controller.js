@@ -15,10 +15,10 @@ const validateIds = (senderId, recipientId) => {
   return { valid: true };
 };
 
-async function sendMessage(socket, io, data) {
+
+async function sendMessage(socket, data) {
   try {
-    // Destructure data to get recipientId, senderId, and messageText
-    const { message: { recipientId, senderId, message: messageText } } = data;
+    const { recipientId, senderId, message: messageText } = data;
     console.log('Received data:', { recipientId, senderId, messageText });
 
     if (!messageText) {
@@ -27,7 +27,6 @@ async function sendMessage(socket, io, data) {
 
     console.log('Finding conversation between:', senderId, 'and', recipientId);
 
-    // Validate IDs
     const { valid, error } = validateIds(senderId, recipientId);
     if (!valid) {
       return socket.emit('error', { error });
@@ -67,10 +66,8 @@ async function sendMessage(socket, io, data) {
 
     console.log('Message sent:', newMessage);
 
-    socket.join(senderId);
-    socket.join(recipientId);
-    // Emit message to both sender and recipient
-    io.to(recipientId).emit('newMessage', newMessage);
+    socket.to(recipientId).emit('newMessage', newMessage); 
+
     socket.emit('messageSent', newMessage);
 
   } catch (error) {
@@ -80,17 +77,17 @@ async function sendMessage(socket, io, data) {
 }
 
 
+
+
 async function getMessages(socket, data) {
   const { otherUserId, userId } = data;
   try {
     console.log('Finding conversation for users:', userId, 'and', otherUserId);
 
-    // Find the conversation
     const conversation = await Conversation.findOne({
       participants: { $all: [userId, otherUserId] },
     });
 
-    // Check if conversation is found
     if (!conversation) {
       console.log('Conversation not found');
       return socket.emit('error', { error: 'Conversation not found' });
@@ -98,7 +95,6 @@ async function getMessages(socket, data) {
 
     console.log('Conversation found:', conversation);
 
-    // Fetch messages for the conversation
     const messages = await Message.find({
       conversationId: conversation._id,
     }).sort({ createdAt: 1 });
@@ -106,7 +102,6 @@ async function getMessages(socket, data) {
 
     console.log('Messages fetched:', messages);
 
-    // Emit messages to the socket
     socket.emit('messages', messages);
   } catch (error) {
     console.error('Error in getMessages:', error);
@@ -135,4 +130,14 @@ async function getConversations(socket, userId) {
   }
 }
 
-export { sendMessage, getMessages, getConversations };
+
+
+async function typing(socket, roomId) {
+  socket.to(roomId).emit('typing');
+}
+
+async function stopTyping(socket, roomId) {
+  socket.to(roomId).emit('stopTyping');
+} 
+
+export { sendMessage, getMessages, getConversations, typing, stopTyping };

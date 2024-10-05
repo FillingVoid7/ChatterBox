@@ -1,155 +1,132 @@
-import React, { createContext, useContext, useReducer, useEffect, useCallback } from 'react';
-import { io } from 'socket.io-client';
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import io from 'socket.io-client';
+import { useDispatch } from 'react-redux';
+import { addMessage, setMessages, setConversation } from '../Redux/Message/messageSlice';
 
-// Create the SocketContext
-const SocketContext = createContext();
+const SocketContext = createContext(null);
 
-// Initial state for the reducer
-const initialState = {
-  socket: null,
-  currentRoom: null,
-};
-
-// Reducer to manage WebSocket state and events
-const socketReducer = (state, action) => {
-  switch (action.type) {
-    case 'CONNECT':
-      return { ...state, socket: action.payload };
-    case 'DISCONNECT':
-      if (state.socket) {
-        state.socket.disconnect();
-      }
-      return { ...state, socket: null };
-    case 'JOIN_ROOM':
-      return { ...state, currentRoom: action.payload };
-    case 'LEAVE_ROOM':
-      if (state.socket && state.currentRoom) {
-        state.socket.emit('leave_room', state.currentRoom);
-      }
-      return { ...state, currentRoom: null };
-    default:
-      return state;
+export const useSocket = () => {
+  const context = useContext(SocketContext);
+  if (!context) {
+    throw new Error('useSocket must be used within a SocketProvider');
   }
+  return context;
 };
-
 
 export const SocketProvider = ({ children }) => {
-  const [state, dispatch] = useReducer(socketReducer, initialState);
+  const [socket, setSocket] = useState(null);
+  const [isTyping, setIsTyping] = useState(false);
+  const dispatch = useDispatch();
+
+  const connectSocket = useCallback(() => {
+    const newSocket = io('http://localhost:3000',{
+      reconnectionAttempts: 5, 
+      reconnectionDelayMax: 20000,
+    });
+
+    newSocket.on('connect', () => {
+      console.log('Connected to WebSocket');
+    });
+
+    newSocket.on('connect_error', (error) => {
+      console.error('Connection error:', error);
+    });
+
+    newSocket.on('reconnect_attempt', (attempt) => {
+      console.log(`Reconnect attempt #${attempt}`);
+    });
+
+    newSocket.on('reconnect', (attempt) => {
+      console.log(`Successfully reconnected on attempt #${attempt}`);
+    });
+
+    newSocket.on('reconnect_failed', () => {
+      console.error('Reconnection failed');           
+    });
+
+    /*This listens for the message event from the server and dispatches it to the Redux store, adding the message to the state. */
+    newSocket.on('message', (message) => {
+      dispatch(addMessage(message));
+    });
+
+
+    /*When a user joins a conversation or fetches previous messages, this handler will update the Redux state with the full history.*/
+    newSocket.on('messages', (messages) => {
+      dispatch(setMessages(messages));
+    });
+
+    newSocket.on('conversation', (conversation) => {
+      dispatch(setConversation(conversation));
+    });
+
+    newSocket.on('error', (error) => {
+      console.error('Socket error:', error);
+    });
+
+    newSocket.on('typing', () => {
+      setIsTyping(true);
+    });
+
+    newSocket.on('stopTyping', () => {  
+      setIsTyping(false);
+    });
+
+    setSocket(newSocket);
+
+    return newSocket;
+  }, [dispatch]);
+
+
 
   useEffect(() => {
-    const socket = io('http://localhost:3000');
-    dispatch({ type: 'CONNECT', payload: socket });
+    const newSocket = connectSocket();
 
     return () => {
-      socket.disconnect();
-      dispatch({ type: 'DISCONNECT' });
+      if (newSocket) newSocket.close();
     };
-  }, []);
-
-  // Function to join a chat room
-  const joinRoom = useCallback(
-    (roomId) => {
-      if (state.socket && roomId && state.currentRoom !== roomId) {
-        state.socket.emit('join_room', roomId);
-        console.log(`Joined room ${roomId}`);
-        dispatch({ type: 'JOIN_ROOM', payload: roomId });
-      }
-    },
-    [state.socket]
-  );
-
-  // Function to leave a chat room
-  const leaveRoom = useCallback(
-    (roomId) => {
-      if (state.socket && roomId) {
-        state.socket.emit('leave_room', roomId);
-        dispatch({ type: 'LEAVE_ROOM' });
-      }
-    },
-    [state.socket]
-  );
-
-  // Function to send a message
-  const sendMessage = useCallback(
-    (message, recipientId, senderId) => {
-      if (state.socket) {
-        state.socket.emit('sendMessage', {
-          recipientId,
-          message,
-          senderId,
-        });
-      }
-    },
-    [state.socket]
-  );
-
-  // Function to listen for new incoming messages in real-time
-  const listenForMessages = useCallback((callback) => {
-    if (state.socket) {
-      state.socket.on('newMessage', (newMessage) => {
-        if (callback) {
-          callback(newMessage);
-        }
-      });
-    }
-  }, [state.socket]);
-
-  const fetchMessages = useCallback((data) => {
-    return new Promise((resolve, reject) => {
-      if (state.socket) {
-        state.socket.emit('getMessages', data);
-
-        // Handle the response from the server
-        state.socket.once('messages', (messages) => {
-          if (messages) {
-            resolve(messages);
-          } else {
-            reject(new Error('No messages received'));
-          }
-        });
-      } else {
-        reject(new Error('Socket is not connected'));
-      }
-    });
-  }, [state.socket]);
+  }, [connectSocket]);
 
 
-  // Handle messages event
-  useEffect(() => {
-    if (state.socket) {
-      state.socket.on('messages', (messages) => {
-        console.log('Messages:', messages);
-        // Handle messages data (you can integrate Zustand store here)
-      });
-    }
-  }, [state.socket]);
 
-  // Function to fetch conversations for a user
-  const fetchConversations = useCallback((userId) => {
-    if (state.socket) {
-      state.socket.emit('getConversations', userId);
-      state.socket.on('conversations', (conversations) => {
-        console.log('Conversations:', conversations);
-        // Handle conversations data (you can integrate Zustand store here)
-      });
-    }
-  }, [state.socket]);
+  const joinRoom = useCallback((roomId) => {
+    if (socket) socket.emit('joinRoom', roomId);
+  }, [socket]);
+
+  const sendMessage = useCallback((data) => {
+    if (socket) socket.emit('sendMessage', data);
+  }, [socket]);
+
+  const getMessages = useCallback((data) => {
+    if (socket) socket.emit('getMessages', data);
+  }, [socket]);
+
+  const getConversation = useCallback((userId) => {
+    if (socket) socket.emit('getConversations', userId);
+  }, [socket]);
+
+  const startTyping = useCallback(() => {
+    if (socket) socket.emit('typing');
+  }, [socket]);
+
+  const stopTyping = useCallback(() => {  
+    if (socket) socket.emit('stopTyping');
+  },[socket]);
+
+  const value = {
+    socket,
+    joinRoom,
+    sendMessage,
+    getMessages,
+    getConversation,
+    startTyping,
+    stopTyping,
+  };
 
   return (
-    <SocketContext.Provider
-      value={{
-        joinRoom,
-        leaveRoom,
-        sendMessage,
-        listenForMessages,
-        fetchMessages,
-        fetchConversations,
-      }}
-    >
+    <SocketContext.Provider value={value}>
       {children}
     </SocketContext.Provider>
   );
 };
 
-// Custom hook for accessing the socket context
-export const useSocket = () => useContext(SocketContext);
+export default SocketProvider;

@@ -7,7 +7,7 @@ import { Server } from "socket.io";
 import { connectDB } from "./Database/connectDB.js";
 import authRoutes from "./Routes/auth.route.js";
 import profileCodeRoutes from "./Routes/profileCode.route.js";
-import { getConversations, getMessages, sendMessage } from "./controllers/message.controller.js"; 
+import { getConversations, getMessages, sendMessage, stopTyping, typing } from "./controllers/message.controller.js";
 
 dotenv.config();
 
@@ -38,19 +38,26 @@ const io = new Server(server, {
     },
 });
 
+
+
+/*This is triggered when a user connects to the WebSocket server. Each connection is represented by a socket object.
+socket.id is a unique identifier for each connected user. */
+
 io.on("connection", (socket) => {
     console.log(`User connected: ${socket.id}`);
 
-    // Handle joining a room
+/* Handle joining a room: When a user joins a room (e.g., a specific conversation), the joinRoom event is emitted from the client. The backend listens for this event, and the user joins a "room" (socket.join(roomId)).
+This allows messages sent within that room to be broadcasted only to the users in the room.*/
+
     socket.on("joinRoom", (roomId) => {
         socket.join(roomId);
         console.log(`User ${socket.id} joined room ${roomId}`);
     });
 
     // Handle sending a message
-    socket.on("sendMessage", (data) => {
-        sendMessage(socket, io, data);
-        console.log('data:',data)
+    socket.on("sendMessage",(data) => {
+        sendMessage(socket, data);
+        console.log('data:', data)
     });
 
     // Handle getting messages
@@ -61,6 +68,15 @@ io.on("connection", (socket) => {
     // Handle getting conversations
     socket.on("getConversations", (userId) => {
         getConversations(socket, userId);
+    });
+
+
+    socket.on('typing', (roomId) => {
+        typing(socket, roomId);
+    });
+
+    socket.on('stopTyping', (roomId) => {
+        stopTyping(socket, roomId);
     });
 
     // Handle disconnection
