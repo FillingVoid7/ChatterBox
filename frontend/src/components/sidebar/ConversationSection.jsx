@@ -300,7 +300,7 @@ import { useProfileCodeStore } from '@/Store/CodeStore.js';
 import { useSocket } from '@/context/SocketContext.jsx';
 
 function ConversationSection({ user, onChatSelect }) {
-    if (!user) {
+    if (!user) {    
         return <div>Loading...</div>;
     }
 
