@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import io from 'socket.io-client';
 import { useDispatch } from 'react-redux';
-import { addMessage, setMessages, setConversation } from '../Redux/Message/messageSlice';
+import { addMessage, setMessages, setConversation } from '../Redux/Message/messageSlice.js';
 
 const SocketContext = createContext(null);
 
@@ -22,7 +22,9 @@ export const SocketProvider = ({ children }) => {
     const newSocket = io('http://localhost:3000',{
       reconnectionAttempts: 5, 
       reconnectionDelayMax: 20000,
-    });
+      withCredentials: true,
+    },
+  );
 
     newSocket.on('connect', () => {
       console.log('Connected to WebSocket');
