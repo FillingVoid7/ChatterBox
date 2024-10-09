@@ -23,6 +23,7 @@ export const SocketProvider = ({ children }) => {
       reconnectionAttempts: 5, 
       reconnectionDelayMax: 20000,
       withCredentials: true,
+      transports: ['websocket'],  
     },
   );
 
